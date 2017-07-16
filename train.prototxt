@@ -1,0 +1,68 @@
+layer {
+  name: "data"
+  type: "Python"
+  top: "data"
+  top: "label"
+  include {
+    phase:TRAIN
+  }
+  python_param {
+    module: "seg_data"
+    layer: "SegImageDataLayer"
+    param_str: "{\"source\":\"train.txt\",\"root_folder\":\"data_root_folder\",\"batch_size\":4,\"shuffle\":True,\"mirror\":True,\"mean_value\":(128.0,128.0,128.0),\"scale\":(0.0078125,0.0078125,0.0078125),\"new_height\":720,\"new_width\":1280}"
+  }
+}
+layer {
+  name: "data"
+  type: "Python"
+  top: "data"
+  top: "label"
+  include {
+    phase:TEST
+  }
+  python_param {
+    module: "seg_data"
+    layer: "SegImageDataLayer"
+    param_str: "{\"source\":\"val.txt\",\"root_folder\":\"data_root_folder\",\"batch_size\":4,\"shuffle\":False,\"mean_value\":(128.0,128.0,128.0),\"scale\":(0.0078125,0.0078125,0.0078125),\"new_height\":720,\"new_width\":1280}"
+  }
+}
+#... your conv layer
+#... your conv layer
+#... your conv layer
+#... your conv layer
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "score"
+  bottom: "label"
+  top: "loss"
+  loss_weight: 1.0
+  loss_param {
+    ignore_label: 255
+  }
+
+}
+layer {
+  name: "iou"
+  type: "Python"
+  bottom:"score"
+  bottom:"label"
+  top: "iou"
+  include {
+    phase:TEST
+  }
+  python_param {
+    module: "seg_iou"
+    layer: "Iou"
+  }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "score"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase:TEST 
+  }
+}
